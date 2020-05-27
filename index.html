@@ -13,14 +13,15 @@
 <h2 id="Overview"><a href="#Overview" class="headerlink" title="Overview"></a>Overview</h2><ol>
 <li>经典的one-stage。直接对原图进行网格划分，将原图分为nxn的小块，然后通过卷积产生nxn的特征图，其一一对应，feature map上每个元素预测对应单元格内的分类/置信度/bbox偏移。</li>
 <li>速度：155fps，mAP：63.4</li>
-</ol></div><a class="article-more button is-small size-small" href="/2020/05/10/Yolov1-CVPR2015-Detection/#more">Read More</a></article></div><div class="card"><article class="card-content article" role="article"><div class="article-meta size-small is-uppercase level is-mobile"><div class="level-left"><time class="level-item" dateTime="2019-07-09T08:54:47.000Z" title="2019-07-09T08:54:47.000Z">2019-07-09</time><span class="level-item"><a class="link-muted" href="/categories/paper/">paper</a></span><span class="level-item">2 minutes read (About 271 words)</span></div></div><h1 class="title is-3 is-size-4-mobile"><a class="link-muted" href="/2019/07/09/Yolov3-CVPR2018-Detection/">Yolov3-CVPR2018-Detection</a></h1><div class="content"><h2 id="Yolo-v3-2018"><a href="#Yolo-v3-2018" class="headerlink" title="Yolo v3-2018"></a>Yolo v3-2018</h2><ul>
+</ol></div><a class="article-more button is-small size-small" href="/2020/05/10/Yolov1-CVPR2015-Detection/#more">Read More</a></article></div><div class="card"><article class="card-content article" role="article"><div class="article-meta size-small is-uppercase level is-mobile"><div class="level-left"><time class="level-item" dateTime="2019-07-09T08:54:47.000Z" title="2019-07-09T08:54:47.000Z">2019-07-09</time><span class="level-item"><a class="link-muted" href="/categories/paper/">paper</a></span><span class="level-item">2 minutes read (About 352 words)</span></div></div><h1 class="title is-3 is-size-4-mobile"><a class="link-muted" href="/2019/07/09/Yolov3-CVPR2018-Detection/">Yolov3-CVPR2018-Detection</a></h1><div class="content"><h2 id="Yolo-v3-2018"><a href="#Yolo-v3-2018" class="headerlink" title="Yolo v3-2018"></a>Yolo v3-2018</h2><ul>
 <li>YOLOv3: An Incremental Improvement</li>
 <li>Paper：<a href="https://pjreddie.com/media/files/papers/YOLOv3.pdf">https://pjreddie.com/media/files/papers/YOLOv3.pdf</a></li>
 <li>Code：<a href="https://github.com/marvis/pytorch-yolo3">https://github.com/marvis/pytorch-yolo3</a></li>
 </ul>
-<h2 id="why"><a href="#why" class="headerlink" title="why"></a>why</h2><ol>
-<li>针对Yolo v1/2中对<strong>小物体不友好</strong>的问题。</li>
-<li><strong>深层网络</strong>DarkNet-53替换。</li>
+<h2 id="Overview"><a href="#Overview" class="headerlink" title="Overview"></a>Overview</h2><ol>
+<li>在Yolov2的基础上使用FPN结构，提升小目标检测的准确率。</li>
+<li>提升backbone网络性能，backbone使用DarkNet-53。</li>
+<li>为解决多标签分类问题，对象分类用Logistic取代了softmax。</li>
 </ol></div><a class="article-more button is-small size-small" href="/2019/07/09/Yolov3-CVPR2018-Detection/#more">Read More</a></article></div><div class="card"><article class="card-content article" role="article"><div class="article-meta size-small is-uppercase level is-mobile"><div class="level-left"><time class="level-item" dateTime="2019-07-09T01:59:23.000Z" title="2019-07-09T01:59:23.000Z">2019-07-09</time><span class="level-item"><a class="link-muted" href="/categories/paper/">paper</a></span><span class="level-item">13 minutes read (About 1891 words)</span></div></div><h1 class="title is-3 is-size-4-mobile"><a class="link-muted" href="/2019/07/09/Yolov2-CVPR2017-Detection/">Yolov2-CVPR2017-Detection</a></h1><div class="content"><h2 id="Yolo-v2-2017"><a href="#Yolo-v2-2017" class="headerlink" title="Yolo v2 2017"></a>Yolo v2 2017</h2><ul>
 <li>Yolo-v2（YOLO9000）: Better, Faster, Stronger</li>
 <li>Paper：<a href="https://arxiv.org/abs/1612.08242">https://arxiv.org/abs/1612.08242</a></li>
