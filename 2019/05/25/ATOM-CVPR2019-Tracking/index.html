@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="generator" content="Hexo 4.2.0"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><meta><title>ATOM-CVPR2019-Tracking - Enlisted-man</title><meta description="ATOM-2019 ATOM：Accurate Tracking by Overlap Maximization Paper ： https:&amp;#x2F;&amp;#x2F;arxiv.org&amp;#x2F;abs&amp;#x2F;1811.07628 Code ：https:&amp;#x2F;&amp;#x2F;github.com&amp;#x2F;visionml&amp;#x2F;pytracking  Overview 大佬决定在跟踪精度上做改进，抛弃anchor，使用GT添加高斯噪声的方式。 受到IOUNet的"><meta property="og:type" content="blog"><meta property="og:title" content="ATOM-CVPR2019-Tracking"><meta property="og:url" content="http://yoursite.com/2019/05/25/ATOM-CVPR2019-Tracking/"><meta property="og:site_name" content="Enlisted-man"><meta property="og:description" content="ATOM-2019 ATOM：Accurate Tracking by Overlap Maximization Paper ： https:&amp;#x2F;&amp;#x2F;arxiv.org&amp;#x2F;abs&amp;#x2F;1811.07628 Code ：https:&amp;#x2F;&amp;#x2F;github.com&amp;#x2F;visionml&amp;#x2F;pytracking  Overview 大佬决定在跟踪精度上做改进，抛弃anchor，使用GT添加高斯噪声的方式。 受到IOUNet的"><meta property="og:locale" content="en_US"><meta property="og:image" content="http://yoursite.com/2019/05/25/ATOM-CVPR2019-Tracking/Network.PNG"><meta property="og:image" content="http://yoursite.com/2019/05/25/ATOM-CVPR2019-Tracking/iou-modulation.PNG"><meta property="og:image" content="http://yoursite.com/2019/05/25/ATOM-CVPR2019-Tracking/algothm1.PNG"><meta property="og:image" content="http://yoursite.com/2019/05/25/ATOM-CVPR2019-Tracking/result.PNG"><meta property="article:published_time" content="2019-05-25T02:36:44.000Z"><meta property="article:modified_time" content="2020-06-15T15:50:08.172Z"><meta property="article:author" content="Enlisted-man"><meta property="article:tag" content="Tracking"><meta property="twitter:card" content="summary"><meta property="twitter:image" content="/2019/05/25/ATOM-CVPR2019-Tracking/Network.PNG"><script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","mainEntityOfPage":{"@type":"WebPage","@id":"http://yoursite.com/2019/05/25/ATOM-CVPR2019-Tracking/"},"headline":"Enlisted-man","image":[],"datePublished":"2019-05-25T02:36:44.000Z","dateModified":"2020-06-15T15:50:08.172Z","author":{"@type":"Person","name":"Enlisted-man"},"description":"ATOM-2019 ATOM：Accurate Tracking by Overlap Maximization Paper ： https:&#x2F;&#x2F;arxiv.org&#x2F;abs&#x2F;1811.07628 Code ：https:&#x2F;&#x2F;github.com&#x2F;visionml&#x2F;pytracking  Overview 大佬决定在跟踪精度上做改进，抛弃anchor，使用GT添加高斯噪声的方式。 受到IOUNet的"}</script><link rel="canonical" href="http://yoursite.com/2019/05/25/ATOM-CVPR2019-Tracking/"><link rel="icon" href="/img/person.png"><link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.12.0/css/all.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@9.12.0/styles/atom-one-light.css"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@400;600&amp;family=Source+Code+Pro"><link rel="stylesheet" href="/css/default.css"><style>body>.footer,body>.navbar,body>.section{opacity:0}</style><!--!--><script>var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "//hm.baidu.com/hm.js?8bffc8249f6c27cc61986f4638bec534";
+            var s = document.getElementsByTagName("script")[0];
+            s.parentNode.insertBefore(hm, s);
+        })();</script><script src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" defer></script><!--!--><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lightgallery@1.6.8/dist/css/lightgallery.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/justifiedGallery@3.7.0/dist/css/justifiedGallery.min.css"><!--!--><!--!--><script src="https://cdn.jsdelivr.net/npm/pace-js@1.0.2/pace.min.js"></script></head><body class="is-2-column"><nav class="navbar navbar-main"><div class="container"><div class="navbar-brand justify-content-center"><a class="navbar-item navbar-logo" href="/"><img src="/img/person.png" alt="Enlisted-man" height="28"></a></div><div class="navbar-menu"><div class="navbar-start"><a class="navbar-item" href="/">Home</a><a class="navbar-item" href="/archives">Archives</a><a class="navbar-item" href="/categories">Categories</a><a class="navbar-item" href="/tags">Tags</a><a class="navbar-item" href="/about">About</a></div><div class="navbar-end"><a class="navbar-item" target="_blank" rel="noopener" title="Download on GitHub" href="https://github.com/ppoffice/hexo-theme-icarus"><i class="fab fa-github"></i></a><a class="navbar-item search" title="Search" href="javascript:;"><i class="fas fa-search"></i></a></div></div></div></nav><section class="section"><div class="container"><div class="columns"><div class="column order-2 column-main is-8-tablet is-8-desktop is-8-widescreen"><div class="card"><article class="card-content article" role="article"><div class="article-meta size-small is-uppercase level is-mobile"><div class="level-left"><time class="level-item" dateTime="2019-05-25T02:36:44.000Z" title="2019-05-25T02:36:44.000Z">2019-05-25</time><span class="level-item"><a class="link-muted" href="/categories/paper/">paper</a></span><span class="level-item">5 minutes read (About 785 words)</span><span class="level-item" id="busuanzi_container_page_pv"><i class="far fa-eye"></i>&nbsp;&nbsp;<span id="busuanzi_value_page_pv">0</span> visits</span></div></div><h1 class="title is-3 is-size-4-mobile">ATOM-CVPR2019-Tracking</h1><div class="content"><h1 id="ATOM-2019"><a href="#ATOM-2019" class="headerlink" title="ATOM-2019"></a>ATOM-2019</h1><ul>
+<li>ATOM：Accurate Tracking by Overlap Maximization</li>
+<li>Paper ： <a href="https://arxiv.org/abs/1811.07628">https://arxiv.org/abs/1811.07628</a></li>
+<li>Code ：<a href="https://github.com/visionml/pytracking">https://github.com/visionml/pytracking</a></li>
+</ul>
+<h2 id="Overview"><a href="#Overview" class="headerlink" title="Overview"></a>Overview</h2><ol>
+<li>大佬决定在跟踪精度上做改进，抛弃anchor，使用GT添加高斯噪声的方式。</li>
+<li>受到IOUNet的启发，将class-special的IOU-Net改为target-special的IOU-Net使其适用于tracking的情境。</li>
+<li>SGD算法收敛太慢，所以提出了新的收敛算法（共轭梯度+牛顿高斯）。</li>
+</ol>
+<a id="more"></a>
+
+<h2 id="why"><a href="#why" class="headerlink" title="why"></a>why</h2><ol>
+<li>近年来，大家的目光都聚焦在tracking的鲁棒性上，而忽略了tracking的准确性。</li>
+<li>在IOUNet的启发下作的一些改进。</li>
+</ol>
+<h2 id="what"><a href="#what" class="headerlink" title="what"></a>what</h2><h3 id="网络结构"><a href="#网络结构" class="headerlink" title="网络结构"></a>网络结构</h3><ol>
+<li>target分类（online）<ul>
+<li>区分前/背景提供一个粗略的定位，online提高分类的鲁棒性</li>
+<li>使用2层全连接层</li>
+<li>抛弃SGD，使用共轭梯度+牛顿高斯方法优化</li>
+</ul>
+</li>
+<li>target估计（offline）<ul>
+<li>用于寻找overlap最大化的bbox，offline学习一个更通用的IoU预测表示</li>
+<li>使用IOU-predictor网络来进行target估计</li>
+<li>input是image object的feature和bbox_delta，然后使用PrROI pooling得到一个预定义大小的feature。</li>
+</ul>
+</li>
+</ol>
+<h2 id="how"><a href="#how" class="headerlink" title="how"></a>how</h2><ol>
+<li>网络结构<br><img src="/2019/05/25/ATOM-CVPR2019-Tracking/Network.PNG" alt="network" title="network"><ul>
+<li>backbone ：Resnet-18（在ImageNet上预训练）</li>
+</ul>
+</li>
+<li>IOU Modulation<br><img src="/2019/05/25/ATOM-CVPR2019-Tracking/iou-modulation.PNG" alt="iou-modulation" title="iou-modulation"><ul>
+<li>对reference帧和search帧进行了特征提取，之后通过channel-wise multiplication做特征融合。</li>
+</ul>
+</li>
+<li>IOU predictor<ul>
+<li>由3层FC层组成</li>
+<li>IOU predictor input : 当前帧的feature，当前帧的bbox估计，reference帧的feature，reference帧中的target bbox</li>
+<li>IOU predictor output : 当前帧中预测的每一个bbox的iou值</li>
+</ul>
+</li>
+<li>Classifier<ul>
+<li>2个全卷积网络</li>
+<li>第一层由1x1卷积构成，将通道减小至64，减少计算量。</li>
+<li>第二层使用4x4的单输出通道kernel</li>
+<li>使用PELU作为输出的激活函数，可以忽略掉简单的负样本</li>
+<li>第一帧，使用了数据增强(旋转，模糊，dropout等)</li>
+<li>在分类过程中使用了自定义的优化策略（共轭梯度+牛顿高斯）<br><img src="/2019/05/25/ATOM-CVPR2019-Tracking/algothm1.PNG" alt="algorithm1" title="algorithm1"></li>
+</ul>
+</li>
+<li>实现细节<ul>
+<li>使用了LaSOT和TrackingNet数据集，同时使用了COCO数据集来进行数据增强操作</li>
+<li>图像对采样间隔为50</li>
+<li>每个图像对，对应生成16个候选的bbox（GT+高斯噪声，同时确保最小iou为0.1）</li>
+<li>权重初始化 -  Delving deep into rectiﬁers: Surpassing human-level performance on imagenet classiﬁcation. In ICCV, 2015. 5</li>
+<li>loss使用MSE loss，训练40个epoch，每个epoch使用64个图像对</li>
+<li>学习率初始为10e-3，weight decay factor为0.2（15epoch）</li>
+<li>在训练过程中，backbone的weight被freezed</li>
+<li>硬负样本挖掘，当distractor在分类score中取到峰值，会将该样本使用2倍的lr在优化训练一轮。同时，在score低于0.25时判断为丢失。</li>
+<li>最后的输出使用IOU最高的3个bbox的平均值。</li>
+</ul>
+</li>
+</ol>
+<h2 id="results"><a href="#results" class="headerlink" title="results"></a>results</h2><ol>
+<li>Nvidia GT-1080 GPU上运行30FPS<br><img src="/2019/05/25/ATOM-CVPR2019-Tracking/result.PNG" alt="result" title="result"></li>
+</ol>
+<h2 id="other-points"><a href="#other-points" class="headerlink" title="other points"></a>other points</h2><ul>
+<li>低层包含更多的表面信息，那为什么不用底层feature做reg,用高层语义信息去做分类。</li>
+</ul>
+</div><div class="article-tags size-small is-uppercase mb-4"><span class="mr-2">#</span><a class="link-muted mr-2" rel="tag" href="/tags/Tracking/">Tracking</a></div><!--!--></article></div><div class="card"><div class="card-content"><h3 class="menu-label has-text-centered">Like this article? Support the author with</h3><div class="buttons is-centered"><a class="button is-info donate"><span class="icon is-small"><i class="fab fa-alipay"></i></span><span>Alipay</span><span class="qrcode"><img src="/img/zfb.jpg" alt="Alipay"></span></a><a class="button is-success donate"><span class="icon is-small"><i class="fab fa-weixin"></i></span><span>Wechat</span><span class="qrcode"><img src="/img/wechat.jpg" alt="Wechat"></span></a></div></div></div><nav class="post-navigation mt-4 level is-mobile"><div class="level-end"><a class="article-nav-next level level-item link-muted" href="/2019/05/24/MGVD-CVPR2019-VideoDetection/"><span class="level-item">MGVD-CVPR2019-VideoDetection</span><i class="level-item fas fa-chevron-right"></i></a></div></nav><div class="card"><div class="card-content"><h3 class="title is-5">Comments</h3><div class="content" id="valine-thread"></div><script src="//cdn1.lncld.net/static/js/3.0.4/av-min.js"></script><script src="https://cdn.jsdelivr.net/npm/valine@1.3.10/dist/Valine.min.js"></script><script>new Valine({
+            el: '#valine-thread' ,
+            notify: false,
+            verify: false,
+            appId: 'bnmKJrgKhp3vqOSVqeXQPWua-gzGzoHsz',
+            appKey: 'qTMAnRTM05fF9oIWOgHmWHC6',
+            placeholder: 'Please leave something...',
+            avatar: 'mm',
+            avatarForce: false,
+            meta: ["nick","mail","link"],
+            pageSize: 10,
+            visitor: true,
+            highlight: true,
+            recordIP: false
+        });</script></div></div></div><div class="column column-left is-4-tablet is-4-desktop is-4-widescreen  order-1"><div class="card widget"><div class="card-content"><nav class="level"><div class="level-item has-text-centered flex-shrink-1"><div><figure class="image is-128x128 mx-auto mb-2"><img class="" src="/img/person.png" alt="KK"></figure><p class="title is-size-4 is-block line-height-inherit">KK</p><p class="is-size-6 is-block">Make life more meaningful.</p><p class="is-size-6 is-flex justify-content-center"><i class="fas fa-map-marker-alt mr-1"></i><span>Beijing</span></p></div></div></nav><nav class="level is-mobile"><div class="level-item has-text-centered is-marginless"><div><p class="heading">Posts</p><a href="/archives"><p class="title">16</p></a></div></div><div class="level-item has-text-centered is-marginless"><div><p class="heading">Category</p><a href="/categories"><p class="title">1</p></a></div></div><div class="level-item has-text-centered is-marginless"><div><p class="heading">Tags</p><a href="/tags"><p class="title">3</p></a></div></div></nav><div class="level"><a class="level-item button is-primary is-rounded" href="https://github.com/Enlisted-man" target="_blank" rel="noopener">Follow</a></div><div class="level is-mobile"><a class="level-item button is-transparent is-marginless" target="_blank" rel="noopener" title="Github" href="https://github.com/Enlisted-man"><i class="fab fa-github"></i></a><a class="level-item button is-transparent is-marginless" target="_blank" rel="noopener" title="RSS" href="/"><i class="fas fa-rss"></i></a></div></div></div><!--!--><div class="card widget"><div class="card-content"><div class="menu"><h3 class="menu-label">Links</h3><ul class="menu-list"><li><a class="level is-mobile is-mobile" href="https://www.csdn.net/" target="_blank" rel="noopener"><span class="level-left"><span class="level-item">csdn</span></span><span class="level-right"><span class="level-item tag">www.csdn.net</span></span></a></li></ul></div></div></div><div class="card widget"><div class="card-content"><div class="menu"><h3 class="menu-label">Categories</h3><ul class="menu-list"><li><a class="level is-mobile is-marginless" href="/categories/paper/"><span class="level-start"><span class="level-item">paper</span></span><span class="level-end"><span class="level-item tag">16</span></span></a></li></ul></div></div></div><div class="card widget"><div class="card-content"><h3 class="menu-label">Recent</h3><article class="media"><div class="media-content size-small"><p><time dateTime="2019-05-25T02:36:44.000Z">2019-05-25</time></p><p class="title is-6"><a class="link-muted" href="/2019/05/25/ATOM-CVPR2019-Tracking/">ATOM-CVPR2019-Tracking</a></p><p class="is-uppercase"><a class="link-muted" href="/categories/paper/">paper</a></p></div></article><article class="media"><div class="media-content size-small"><p><time dateTime="2019-05-24T03:51:20.000Z">2019-05-24</time></p><p class="title is-6"><a class="link-muted" href="/2019/05/24/MGVD-CVPR2019-VideoDetection/">MGVD-CVPR2019-VideoDetection</a></p><p class="is-uppercase"><a class="link-muted" href="/categories/paper/">paper</a></p></div></article><article class="media"><div class="media-content size-small"><p><time dateTime="2019-05-23T02:20:46.000Z">2019-05-23</time></p><p class="title is-6"><a class="link-muted" href="/2019/05/23/SiamDW-CVPR2019-Tracking/">SiamDW-CVPR2019-Tracking</a></p><p class="is-uppercase"><a class="link-muted" href="/categories/paper/">paper</a></p></div></article><article class="media"><div class="media-content size-small"><p><time dateTime="2019-05-22T02:36:46.000Z">2019-05-22</time></p><p class="title is-6"><a class="link-muted" href="/2019/05/22/C-RPN-CVPR2019-Tracking/">C-RPN-CVPR2019-Tracking</a></p><p class="is-uppercase"><a class="link-muted" href="/categories/paper/">paper</a></p></div></article><article class="media"><div class="media-content size-small"><p><time dateTime="2019-05-21T06:20:33.000Z">2019-05-21</time></p><p class="title is-6"><a class="link-muted" href="/2019/05/21/Bottleneck-LSTM-CVPR2018-VideoDetection/">Bottleneck-LSTM-CVPR2018-VideoDetection</a></p><p class="is-uppercase"><a class="link-muted" href="/categories/paper/">paper</a></p></div></article></div></div><div class="card widget"><div class="card-content"><div class="menu"><h3 class="menu-label">Archives</h3><ul class="menu-list"><li><a class="level is-mobile is-marginless" href="/archives/2019/05/"><span class="level-start"><span class="level-item">May 2019</span></span><span class="level-end"><span class="level-item tag">16</span></span></a></li></ul></div></div></div><div class="card widget"><div class="card-content"><div class="menu"><h3 class="menu-label">Tags</h3><div class="field is-grouped is-grouped-multiline"><div class="control"><a class="tags has-addons" href="/tags/Detection/"><span class="tag">Detection</span><span class="tag is-grey-lightest">8</span></a></div><div class="control"><a class="tags has-addons" href="/tags/Tracking/"><span class="tag">Tracking</span><span class="tag is-grey-lightest">6</span></a></div><div class="control"><a class="tags has-addons" href="/tags/Video-Detection/"><span class="tag">Video Detection</span><span class="tag is-grey-lightest">2</span></a></div></div></div></div></div><div class="card widget"><div class="card-content"><div class="menu"><h3 class="menu-label">Subscribe to Updates</h3><form action="https://feedburner.google.com/fb/a/mailverify" method="post" target="popupwindow" onsubmit="window.open(&#039;https://feedburner.google.com/fb/a/mailverify?uri=&#039;,&#039;popupwindow&#039;,&#039;scrollbars=yes,width=550,height=520&#039;);return true"><input type="hidden" value="" name="uri"><input type="hidden" name="loc" value="en_US"><div class="field has-addons"><div class="control has-icons-left is-expanded"><input class="input" name="email" type="email" placeholder="Email"><span class="icon is-small is-left"><i class="fas fa-envelope"></i></span></div><div class="control"><input class="button is-primary" type="submit" value="Subscribe"></div></div></form></div></div></div></div><!--!--></div></div></section><footer class="footer"><div class="container"><div class="level"><div class="level-start"><a class="footer-logo is-block mb-2" href="/"><img src="/img/person.png" alt="Enlisted-man" height="28"></a><p class="size-small"><span>&copy; 2023 Enlisted-man</span>  Powered by <a href="https://hexo.io/" target="_blank" rel="noopener">Hexo</a> &amp; <a href="https://github.com/ppoffice/hexo-theme-icarus" target="_blank" rel="noopener">Icarus</a><br><span id="busuanzi_container_site_uv">Visited by <span id="busuanzi_value_site_uv">0</span> users</span></p></div><div class="level-end"><div class="field has-addons"><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Creative Commons" href="https://creativecommons.org/"><i class="fab fa-creative-commons"></i></a></p><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Attribution 4.0 International" href="https://creativecommons.org/licenses/by/4.0/"><i class="fab fa-creative-commons-by"></i></a></p><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Download on GitHub" href="https://github.com/ppoffice/hexo-theme-icarus"><i class="fab fa-github"></i></a></p></div></div></div></div></footer><script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script><script src="https://cdn.jsdelivr.net/npm/moment@2.22.2/min/moment-with-locales.min.js"></script><script>moment.locale("en");</script><script>var IcarusThemeSettings = {
+            site: {
+                url: 'http://yoursite.com',
+                external_link: {"enable":true,"exclude":[]}
+            },
+            article: {
+                highlight: {
+                    clipboard: true,
+                    fold: 'unfolded'
+                }
+            }
+        };</script><script src="https://cdn.jsdelivr.net/npm/clipboard@2.0.4/dist/clipboard.min.js" defer></script><script src="/js/animation.js"></script><a id="back-to-top" title="Back to Top" href="javascript:;"><i class="fas fa-chevron-up"></i></a><script src="/js/back_to_top.js" defer></script><!--!--><!--!--><!--!--><script src="https://cdn.jsdelivr.net/npm/lightgallery@1.6.8/dist/js/lightgallery.min.js" defer></script><script src="https://cdn.jsdelivr.net/npm/justifiedGallery@3.7.0/dist/js/jquery.justifiedGallery.min.js" defer></script><script>window.addEventListener("load", () => {
+            if (typeof $.fn.lightGallery === 'function') {
+                $('.article').lightGallery({ selector: '.gallery-item' });
+            }
+            if (typeof $.fn.justifiedGallery === 'function') {
+                if ($('.justified-gallery > p > .gallery-item').length) {
+                    $('.justified-gallery > p > .gallery-item').unwrap();
+                }
+                $('.justified-gallery').justifiedGallery();
+            }
+        });</script><!--!--><!--!--><!--!--><script src="/js/main.js" defer></script><div class="searchbox"><div class="searchbox-container"><div class="searchbox-header"><div class="searchbox-input-container"><input class="searchbox-input" type="text" placeholder="Type something..."></div><a class="searchbox-close" href="javascript:;">×</a></div><div class="searchbox-body"></div></div></div><script src="/js/insight.js" defer></script><script>document.addEventListener('DOMContentLoaded', function () {
+            loadInsight({"contentUrl":"/content.json"}, {"hint":"Type something...","untitled":"(Untitled)","posts":"Posts","pages":"Pages","categories":"Categories","tags":"Tags"});
+        });</script></body></html>
