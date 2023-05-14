@@ -99,7 +99,7 @@ theme: icarus
 ## Docs: https://hexo.io/docs/deployment.html
 deploy:
   type: 'git'
-  repo: https://github.com/Enlisted-man/Enlisted-man.github.io.git
+  repo: git@github.com:Enlisted-man/Enlisted-man.github.io.git
   branch: master
 
 # BackUp
