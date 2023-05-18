@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="generator" content="Hexo 4.2.0"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><meta><title>MySQL原理浅析 - Enlisted-man</title><meta description="一、模块分布 连接驱动，连接池（关键参数：最大链接数量，单次最大数据报文）  SQL接口，SQL解析器，SQL优化器  存储引擎（对优化后的SQL进行执行），存储分为内存和硬盘，InnoDB，MyISAM，Cluster，Falcon   二、数据写入1. 写入流程 一切逻辑处理和读写操作都操作内存中数据 – Buffer pool，数据写入过程如下 为支持回滚，数据旧值会存储在Undo log中"><meta property="og:type" content="blog"><meta property="og:title" content="MySQL原理浅析"><meta property="og:url" content="http://yoursite.com/2022/06/23/MYSQL%E5%8E%9F%E7%90%86%E6%B5%85%E8%AF%BB/"><meta property="og:site_name" content="Enlisted-man"><meta property="og:description" content="一、模块分布 连接驱动，连接池（关键参数：最大链接数量，单次最大数据报文）  SQL接口，SQL解析器，SQL优化器  存储引擎（对优化后的SQL进行执行），存储分为内存和硬盘，InnoDB，MyISAM，Cluster，Falcon   二、数据写入1. 写入流程 一切逻辑处理和读写操作都操作内存中数据 – Buffer pool，数据写入过程如下 为支持回滚，数据旧值会存储在Undo log中"><meta property="og:locale" content="en_US"><meta property="og:image" content="http://yoursite.com/img/og_image.png"><meta property="article:published_time" content="2022-06-23T15:10:46.000Z"><meta property="article:modified_time" content="2023-05-18T08:42:50.226Z"><meta property="article:author" content="Enlisted-man"><meta property="article:tag" content="MySQL"><meta property="twitter:card" content="summary"><meta property="twitter:image" content="/img/og_image.png"><script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","mainEntityOfPage":{"@type":"WebPage","@id":"http://yoursite.com/2022/06/23/MYSQL%E5%8E%9F%E7%90%86%E6%B5%85%E8%AF%BB/"},"headline":"Enlisted-man","image":["http://yoursite.com/img/og_image.png"],"datePublished":"2022-06-23T15:10:46.000Z","dateModified":"2023-05-18T08:42:50.226Z","author":{"@type":"Person","name":"Enlisted-man"},"description":"一、模块分布 连接驱动，连接池（关键参数：最大链接数量，单次最大数据报文）  SQL接口，SQL解析器，SQL优化器  存储引擎（对优化后的SQL进行执行），存储分为内存和硬盘，InnoDB，MyISAM，Cluster，Falcon   二、数据写入1. 写入流程 一切逻辑处理和读写操作都操作内存中数据 – Buffer pool，数据写入过程如下 为支持回滚，数据旧值会存储在Undo log中"}</script><link rel="canonical" href="http://yoursite.com/2022/06/23/MYSQL%E5%8E%9F%E7%90%86%E6%B5%85%E8%AF%BB/"><link rel="icon" href="/img/person.png"><link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.12.0/css/all.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@9.12.0/styles/atom-one-light.css"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@400;600&amp;family=Source+Code+Pro"><link rel="stylesheet" href="/css/default.css"><style>body>.footer,body>.navbar,body>.section{opacity:0}</style><!--!--><script>var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "//hm.baidu.com/hm.js?8bffc8249f6c27cc61986f4638bec534";
+            var s = document.getElementsByTagName("script")[0];
+            s.parentNode.insertBefore(hm, s);
+        })();</script><script src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" defer></script><!--!--><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lightgallery@1.6.8/dist/css/lightgallery.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/justifiedGallery@3.7.0/dist/css/justifiedGallery.min.css"><!--!--><!--!--><script src="https://cdn.jsdelivr.net/npm/pace-js@1.0.2/pace.min.js"></script></head><body class="is-2-column"><nav class="navbar navbar-main"><div class="container"><div class="navbar-brand justify-content-center"><a class="navbar-item navbar-logo" href="/"><img src="/img/person.png" alt="Enlisted-man" height="28"></a></div><div class="navbar-menu"><div class="navbar-start"><a class="navbar-item" href="/">Home</a><a class="navbar-item" href="/archives">Archives</a><a class="navbar-item" href="/categories">Categories</a><a class="navbar-item" href="/tags">Tags</a><a class="navbar-item" href="/about">About</a></div><div class="navbar-end"><a class="navbar-item" target="_blank" rel="noopener" title="Download on GitHub" href="https://github.com/ppoffice/hexo-theme-icarus"><i class="fab fa-github"></i></a><a class="navbar-item search" title="Search" href="javascript:;"><i class="fas fa-search"></i></a></div></div></div></nav><section class="section"><div class="container"><div class="columns"><div class="column order-2 column-main is-8-tablet is-8-desktop is-8-widescreen"><div class="card"><article class="card-content article" role="article"><div class="article-meta size-small is-uppercase level is-mobile"><div class="level-left"><time class="level-item" dateTime="2022-06-23T15:10:46.000Z" title="2022-06-23T15:10:46.000Z">2022-06-23</time><span class="level-item"><a class="link-muted" href="/categories/blog/">blog</a></span><span class="level-item">30 minutes read (About 4525 words)</span><span class="level-item" id="busuanzi_container_page_pv"><i class="far fa-eye"></i>&nbsp;&nbsp;<span id="busuanzi_value_page_pv">0</span> visits</span></div></div><h1 class="title is-3 is-size-4-mobile">MySQL原理浅析</h1><div class="content"><h2 id="一、模块分布"><a href="#一、模块分布" class="headerlink" title="一、模块分布"></a>一、模块分布</h2><ul>
+<li><p>连接驱动，连接池（关键参数：最大链接数量，单次最大数据报文）</p>
+</li>
+<li><p>SQL接口，SQL解析器，SQL优化器</p>
+</li>
+<li><p>存储引擎（对优化后的SQL进行执行），存储分为内存和硬盘，InnoDB，MyISAM，Cluster，Falcon</p>
+</li>
+</ul>
+<h2 id="二、数据写入"><a href="#二、数据写入" class="headerlink" title="二、数据写入"></a>二、数据写入</h2><h3 id="1-写入流程"><a href="#1-写入流程" class="headerlink" title="1. 写入流程"></a>1. 写入流程</h3><ul>
+<li>一切逻辑处理和读写操作都操作内存中数据 – Buffer pool，数据写入过程如下<ul>
+<li>为支持回滚，数据旧值会存储在Undo log中</li>
+<li>将数据新值写入Buffer Pool中，并在合适的时间由innodb提供的线程写入磁盘中</li>
+<li>为防止断电后写入内存中的数据丢失，innodb设计了redo log（内存中）存放 更新写入信息，并植入至redo log日志文件中（磁盘），此处有多种刷盘策略 ；在机器故障重启后会优先从redo log中将未刷盘的数据写入来保证数据的完整性<ul>
+<li>策略0：将更新写入信息 -&gt; Redo log buffer -&gt; 每隔1s写入系统page cache并刷盘。该策略在MYSQL挂了或者系统宕机时可能会有1s的数据丢失。</li>
+<li>策略1：在事务提交前，将更新写入信息 -&gt; 在事务提交时，Redo log buffer -&gt; 操作系统page cache中 -&gt; flush磁盘。该策略在MYSQL挂了或者系统宕机时，日志丢了，但是事务未提交，数据具备一致性。</li>
+<li>策略2：将更新写入信息 -&gt; Redo log buffer和系统page cache -&gt; 每隔1s写刷盘。该策略在MYSQL挂了的场景下没有影响，在系统宕机可能会有1s的数据丢失。</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="2-存储结构"><a href="#2-存储结构" class="headerlink" title="2. 存储结构"></a>2. 存储结构</h3><a id="more"></a>
+
+<ul>
+<li><p>新表创建，会在磁盘data目录下生成xx.frm文件（存储表结构信息）和xx.idb文件（表空间文件，用来存储表数据和索引，5.7之前所有表的数据和索引都存放在系统表空间，5.7之后会为每张表创建独立表空间）</p>
+</li>
+<li><p>5类表空间：独立表空间，系统表空间，undo表空间，通用表空间，临时表空间。独立表空间相比系统表空间具有可压缩，可传输等优势</p>
+</li>
+<li><p>页：InnoDB读取写入数据的单位是页（16k，内存对齐，与B+索引树中节点对应，共有12种页结构），是innoDB内存和磁盘交互的最小存储单元，每个页内部地址连续</p>
+</li>
+<li><p>行：最大大小为8kb但大小不固定</p>
+</li>
+<li><p>区：大小固定为1M，存放64个地址连续的页，在跨页读相关数据的情况大概率都在附近地址，很少出现磁头移动；对于读取频繁的区会将整个区放入buffer pool内存中了；对于新建表默认会创建6个页（前4个分别记录 了表空间和区组条目信息，change buffer信息，段信息，索引根信息），不为一个区，共占96k，8.0版本后会创建7个页，这些也会放在表空间的碎片区中；当存储需求越来越大，会不断创建新的页空间，直到构建了32个零散页之后，后续每次都会申请完整的区。</p>
+</li>
+<li><p>组：方便区的管理，每个组管理固定的256个区即256M；第一个组的第一个区的前四个页保存了表空间和区组条目信息，change buffer信息，段信息，索引根信息，其他组的第一个区的前两个页保存了区组条目信息和change buffer相关信息</p>
+</li>
+<li><p>段：逻辑概念，不对应物理结构，用来区分不同功能区和碎片区中的页，分为叶子节点段（存储和管理实际数据）和非叶子节点段（存储和管理索引树），对应B+树中的叶子和非叶子节点</p>
+</li>
+</ul>
+<h3 id="2-执行原理"><a href="#2-执行原理" class="headerlink" title="2. 执行原理"></a>2. 执行原理</h3><ul>
+<li><p>客户端与服务端建立链接，获取SQL语句。客户端（连接驱动）和服务端（连接池）的使用半双工模式通信</p>
+</li>
+<li><p>根据SQL语句查询 DB的查询缓存（map结构，key为sql语句，value为查询结果），由于多数情况下查询条件都不相同，会导致缓存命中率低，所以在8.0版本后去掉了查询缓存</p>
+</li>
+<li><p>sql解析器</p>
+<ul>
+<li>词法分析。sql词法分析结合symbols数据对sql语句进行关键词，非关键词标记</li>
+<li>语法分析 bison。将规则解析为一个语法树，并进行正确性验证（关键字，关键字顺序等）</li>
+</ul>
+</li>
+<li><p>预处理器。先提交SQL模板语句，再提交参数进行执行；对于多次重复执行的语句可以只提供一次SQL模板，提供多次SQL参数即可；语法验证（表和列是否存在，别名歧义验证等）</p>
+</li>
+<li><p>SQL优化器。通过基于成本的优化器CBO，从目标诸多执行路径中选择成本最小的执行路径作为执行计划。（成本指数据表，数量，索引等信息计算出SQL语句对应的IO成本消耗值和CPU成本消耗值）；优化策略：关联查询重排，索引优选，链接查询重组，优化排序，优化max/min函数，提前终止查询，等价变化等。</p>
+</li>
+<li><p>SQL执行器。根据以上提供的执行计划，查询相关的Handler API进行组合和调用，将查询结果通过TCP协议返回给客户端  </p>
+</li>
+<li><p>InnoDB执行过程。将Handler API传入命令进行微事务拆解MTR（原子访问）。</p>
+<ul>
+<li>读指令。先去buffer pool通过 自适应哈希索引AHI 进行查找并返回（innodb会根据一些规则为热点页建立AHI）；buffer pool中未找到对应数据，则通过<strong>预读</strong>方式将相关数据从磁盘表空间加载到buffer pool中，返回数据读指令结果。buffer pool会通过free链表，flush链表，LRU链表管理数据页的写入位置，刷盘位置及数据页淘汰。</li>
+<li>写指令。先写入负责事务回滚的undo log，然后将数据记录写入redo log buffer中，并根据一定策略将数据刷入磁盘redo log中（保证断电等情况下将尚未刷到磁盘中的数据做恢复）；将真实数据写入buffer pool，同时根据一定规则判断是否要写入change buffer中，写入change buffer后将在后续某时机合并到buffer pool中，真实数据写入buffer  pool后会找时机将内存中数据刷入磁盘中；为保证页的完整传输会先将数据写入double write buffer中，同时写入磁盘中 系统表空间 的double write中（在页传输到一半时出现问题，磁盘上产生了残缺的页也可以通过double write进行恢复）；double write写完后将真实数据刷入磁盘就完成了写指令。</li>
+<li>innodb中的其他模块，内存：锁信息区（锁信息），数据字典区（字典信息），additional memory pool（内部共享信息）；磁盘：通用表空间，临时表空间</li>
+</ul>
+</li>
+</ul>
+<h2 id="三、日志"><a href="#三、日志" class="headerlink" title="三、日志"></a>三、日志</h2><h3 id="1-bin-log-二进制日志"><a href="#1-bin-log-二进制日志" class="headerlink" title="1. bin log-二进制日志"></a>1. bin log-二进制日志</h3><ul>
+<li><p>bin log提供变更历史查询，数据库备份和恢复，主从复制等功能；在redo log写入同时，对binlog进行刷盘。binlog在事务提交的时候一次性写入，在事务提交时将日志写入cache中，事务提交的时候将cache一次性写入binlog文件</p>
+</li>
+<li><p>STATEMENT方式：记录变更SQL的SQL语句；相比ROW方式无需存储数据变更行的明细，存储量相对较小；但对于包含部分函数的语句无法保证数据一致性，比如UUID，rand等；同时需要记录SQL执行时的一些上下文信息。</p>
+</li>
+<li><p>ROW方式：记录实际变更的数据行；无需记录SQL变更时的上下文信息，数据一致性得到保障；但当ALTER，UPDATE较多数据行时会产生大量的日志内容。</p>
+</li>
+<li><p>MIXED方式：以上两种方式的融合，数据行变更多且不会产生数据一致性问题的语句用STATEMENT方式比如表结构变更，rand函数等，其他用ROW方式，两者兼顾。</p>
+</li>
+</ul>
+<h3 id="2-redo-log-重做日志"><a href="#2-redo-log-重做日志" class="headerlink" title="2. redo log - 重做日志"></a>2. redo log - 重做日志</h3><ul>
+<li>redolog保证事务的持久性。在DB故障时如果数据更新操作写入了buffer pool中但还未写入磁盘中，DB重启后会根据redolog恢复内存中的数据至磁盘中。</li>
+<li>redolog记录物理数据页面的修改信息；redolog大小固定，采用环形数组形式，循环擦除记录；事务开始之后开始写入redolog，对应事务的数据写入至磁盘后，redo log的空间可被覆盖重用。</li>
+</ul>
+<h3 id="3-undo-log-回滚日志"><a href="#3-undo-log-回滚日志" class="headerlink" title="3. undo log - 回滚日志"></a>3. undo log - 回滚日志</h3><ul>
+<li>undolog保证事务的原子性。保存事务发生之前数据的一个版本，可用于回滚。在真实数据行中会使用roll_pointer关联undo log信息，</li>
+<li>写入时间：在事务中，每个SQL通过执行器后会在回滚段中申请一个undo log页，根据sql信息构建undo log内容？同时将其写入磁盘，保证每次操作真正数据前undo log完整；undo log写入完成后才会执行内存数据写入，记录redo log，数据刷盘等操作。</li>
+<li>大小个数限制：按每页4kb，默认共有128个回滚段，每个回滚段可创建1024个undolog页 </li>
+<li>日志格式：根据增删改分为不同的日志格式类型；新增操作记录的undo log日志在事务提交之后可直接删除，删除和更新的undo log需要用于MVCC；undolog为节省空间会设定一定的重用机制。</li>
+</ul>
+<h2 id="四、InnoDB页"><a href="#四、InnoDB页" class="headerlink" title="四、InnoDB页"></a>四、InnoDB页</h2><h3 id="1-简介"><a href="#1-简介" class="headerlink" title="1. 简介"></a>1. 简介</h3><ul>
+<li><p>页是innodb管理数据和磁盘交互的基本单元，默认16kb，需要保证他是操作系统 数据块 4KB的整数倍（在读写操作中保证数据块的完整，不被分割浪费）</p>
+</li>
+<li><p>数据页的构成：页头，页尾，数据行</p>
+<ul>
+<li>页头：总体占用38字节，页号-全局唯一，占用4个字节；上下页的页号，组成双向链表；页类型，表空间ID，最近一次修改的LSN，已经被刷到磁盘的LSN（日志序列号），校验和（做完整性校验，默认使用crc32验证算法验证）。 </li>
+<li>页尾：总体占用8字节，校验和，最近一次修改的LSN</li>
+<li>数据行：与表中的数据行对应，每个数据行通过next_record字段构成一个单向链表；为加速数据行的查询效率，在页结构中构建了page direction页目录，存储数据行组（每8个数据行为一个组）的最后一个数据行在页中的地址，后续数据行的查询可以使用页目录进行二分查找。</li>
+</ul>
+</li>
+<li><p>数据行中Null值节省空间的存储方式：数据行中数据为Null的列，会单独放在数据行头部信息的 Null值列表 （由可为Null的列组成，没割裂占一个bit位，该行中该列为空则为1，不为空则为0）</p>
+</li>
+<li><p>数据行的类型：DYNAMIC，COMPRESSED（与DYNAMIC相结构相同，不过会对数据进行压缩），COMPACT（与DYNAMIC在超长字段的处理上有一些区别，不会把所有超长字段都放入溢出页中）</p>
+</li>
+</ul>
+<h3 id="2-索引结构"><a href="#2-索引结构" class="headerlink" title="2. 索引结构"></a>2. 索引结构</h3><ul>
+<li>平衡二叉树：数据量大的情况下，树的高度较高，查询成本高；且平衡要求严格，插入的变换成本高；查询效率不稳定。</li>
+<li>B树：查询单值场景效率高（可以通过degree降低树的高度），但是范围查询效率低（相邻数值可能在结构上可能相差很远），查询效率不稳定（取决于离根节点的远近）</li>
+<li>红黑树：范围查询问题；数据量大后查询成本问题（本质上还是而平衡二叉树，只是平衡条件宽松了，意味着树的高度跟平衡二叉树相似）；查询效率不稳定。</li>
+<li>B+树：将所有数据都放在叶子节点，可以保证每次查询的稳定性（都需要走树的高度）；非叶子节点不存放实际数据，意味着可以存放更多的索引信息（16kb页通常可存储300/400个key和下一页地址的行 ）；将叶子节点的数据链接，可以解决范围查询的问题</li>
+</ul>
+<h3 id="3-聚簇-非聚簇索引"><a href="#3-聚簇-非聚簇索引" class="headerlink" title="3. 聚簇/非聚簇索引"></a>3. 聚簇/非聚簇索引</h3><ul>
+<li>聚簇索引又称为 一级索引， 在表创建时自动创建，主键设定（业务主键 -&gt; 业务唯一键 -&gt; 数据库自动生成的db_row_id）</li>
+<li>非聚簇索引又称为二级索引，索引中除去一级索引外的其他索引。非聚簇索引的结构中仅保存主键及聚簇索引key；查询过程：根据key在非聚簇索引中查找到对应聚簇索引的key，再去聚簇索引树中查找对应的实际数据</li>
+<li>回表？</li>
+</ul>
+<h2 id="五、事务"><a href="#五、事务" class="headerlink" title="五、事务"></a>五、事务</h2><ul>
+<li>定义：将多个数据库操作打包成一个不可分割的整体来执行，要不全部执行，要不全不执行，以保证数据的可靠和一致性。START TRANSACTION：开启事务；COMMIT：提交事务。</li>
+</ul>
+<h3 id="1-ACID模型"><a href="#1-ACID模型" class="headerlink" title="1. ACID模型"></a>1. ACID模型</h3><p><strong>原子性，隔离性，持久性保证最终的一致性。</strong></p>
+<ul>
+<li>原子性：借助undo log实现，当事务中的某个操作执行失败时，会按照undo log中的记录反向执行，将数据恢复。</li>
+<li>隔离性：指事务执行过程中相互隔离，不能相互干扰，不能查看相互间未提交的数据。主要分为写+写隔离（通过锁实现），写+读隔离（通过MVCC实现）</li>
+<li>持久性：事务一旦提交，事务中的所有更改不会因为电源故障，系统崩溃等意外发生变化。<ul>
+<li>写入buffer pool但未写入磁盘时故障，借助redo log实现。</li>
+<li>在数据刷盘过程中故障，默认以16kb大小的数据页刷盘，而操作系统每次以4kb大小进行数据传输，存在数据页只传输一部分情况，这里借助双写缓冲区，通过他的同步机制来解决。</li>
+</ul>
+</li>
+<li>一致性 </li>
+</ul>
+<p><strong>多个事务同时执行会出现的三大明显问题。</strong></p>
+<ul>
+<li>脏读，不可重复读，幻读 </li>
+<li>四种隔离级别<ul>
+<li>读未提交：读取数据时采用当前读模式，更新数据时采用共享行锁</li>
+<li>读已提交：在事务读取数据时不加锁，但使用快照读（MVCC），更新数据采用独占行锁</li>
+<li>可重复读：不加锁使用快照读，更新数据时采用next-key行锁</li>
+<li>串行读：事务读取时添加共享表锁，数据更新时添加独占表锁</li>
+</ul>
+</li>
+</ul>
+<h3 id="2-锁机制"><a href="#2-锁机制" class="headerlink" title="2. 锁机制"></a>2. 锁机制</h3><h4 id="2-1-锁模式"><a href="#2-1-锁模式" class="headerlink" title="2.1 锁模式"></a>2.1 锁模式</h4><ul>
+<li>共享锁（读锁，LOCK IN SHARE MODE）：一个事务添加了共享锁后，其他事务还可重复添加共享锁，但无法添加排他锁。</li>
+<li>独占锁（写锁，排他锁，FOR UPDATE）：在当前加锁事务释放前，其他事务无法为数据加任何锁</li>
+<li>共享意向锁：上锁时在数据所在表上做标记，其他事务为表加锁前无需遍历每条数据判断是否有锁</li>
+<li>独占意向锁：同上</li>
+<li>自增锁：表锁，为配置了AUTO_INCREMENT的列服务，在插入数据时会增加自增锁，生成自增值，同时阻塞其他的插入操作，以保证值的唯一。</li>
+</ul>
+<h4 id="2-2-锁类型"><a href="#2-2-锁类型" class="headerlink" title="2.2 锁类型"></a>2.2 锁类型</h4><ul>
+<li>表锁，行锁</li>
+</ul>
+<h4 id="2-3-行子类型"><a href="#2-3-行子类型" class="headerlink" title="2.3 行子类型"></a>2.3 行子类型</h4><ul>
+<li>精准行锁：精准锁住对应的行数据</li>
+<li>GAP锁：锁住行与行之间的间隙，防止在间隙中插入数据 </li>
+<li>Next key锁：以上两种锁的组合 </li>
+<li>插入意向锁：共享锁，如果一个行间隙加了GAP锁，其他事务想在这个行间隙插入数据会加插入意向锁，多个事务都可以加锁，当GAP锁释放后允许多个插入意向锁同时进行插入，以提升插入效率。</li>
+</ul>
+<h4 id="2-4-MVCC机制"><a href="#2-4-MVCC机制" class="headerlink" title="2.4 MVCC机制"></a>2.4 MVCC机制</h4><ul>
+<li>多版本并发控制机制，在读取数据时利用类似数据快照的形式将数据保存下来，以保证读锁和写锁不冲突，通过undo log版本链和readview读视图来实现的。</li>
+</ul>
+</div><div class="article-tags size-small is-uppercase mb-4"><span class="mr-2">#</span><a class="link-muted mr-2" rel="tag" href="/tags/MySQL/">MySQL</a></div><!--!--></article></div><div class="card"><div class="card-content"><h3 class="menu-label has-text-centered">Like this article? Support the author with</h3><div class="buttons is-centered"><a class="button is-info donate"><span class="icon is-small"><i class="fab fa-alipay"></i></span><span>Alipay</span><span class="qrcode"><img src="/img/zfb.jpg" alt="Alipay"></span></a><a class="button is-success donate"><span class="icon is-small"><i class="fab fa-weixin"></i></span><span>Wechat</span><span class="qrcode"><img src="/img/wechat.jpg" alt="Wechat"></span></a></div></div></div><nav class="post-navigation mt-4 level is-mobile"><div class="level-start"><a class="article-nav-prev level level-item link-muted" href="/2022/09/23/Spring%20Bean%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F/"><i class="level-item fas fa-chevron-left"></i><span class="level-item">Spring Bean生命周期</span></a></div><div class="level-end"><a class="article-nav-next level level-item link-muted" href="/2021/02/23/MySQL%E7%B4%A2%E5%BC%95%E5%BC%95%E5%87%BA%E7%9A%84%E6%A0%91%E7%BB%93%E6%9E%84/"><span class="level-item">常见的树结构</span><i class="level-item fas fa-chevron-right"></i></a></div></nav><div class="card"><div class="card-content"><h3 class="title is-5">Comments</h3><div class="content" id="valine-thread"></div><script src="//cdn1.lncld.net/static/js/3.0.4/av-min.js"></script><script src="https://cdn.jsdelivr.net/npm/valine@1.3.10/dist/Valine.min.js"></script><script>new Valine({
+            el: '#valine-thread' ,
+            notify: false,
+            verify: false,
+            appId: 'bnmKJrgKhp3vqOSVqeXQPWua-gzGzoHsz',
+            appKey: 'qTMAnRTM05fF9oIWOgHmWHC6',
+            placeholder: 'Please leave something...',
+            avatar: 'mm',
+            avatarForce: false,
+            meta: ["nick","mail","link"],
+            pageSize: 10,
+            visitor: true,
+            highlight: true,
+            recordIP: false
+        });</script></div></div></div><div class="column column-left is-4-tablet is-4-desktop is-4-widescreen  order-1"><div class="card widget"><div class="card-content"><nav class="level"><div class="level-item has-text-centered flex-shrink-1"><div><figure class="image is-128x128 mx-auto mb-2"><img class="" src="/img/person.png" alt="KK"></figure><p class="title is-size-4 is-block line-height-inherit">KK</p><p class="is-size-6 is-block">Make life more meaningful.</p><p class="is-size-6 is-flex justify-content-center"><i class="fas fa-map-marker-alt mr-1"></i><span>Beijing</span></p></div></div></nav><nav class="level is-mobile"><div class="level-item has-text-centered is-marginless"><div><p class="heading">Posts</p><a href="/archives"><p class="title">20</p></a></div></div><div class="level-item has-text-centered is-marginless"><div><p class="heading">Categories</p><a href="/categories"><p class="title">2</p></a></div></div><div class="level-item has-text-centered is-marginless"><div><p class="heading">Tags</p><a href="/tags"><p class="title">7</p></a></div></div></nav><div class="level"><a class="level-item button is-primary is-rounded" href="https://github.com/Enlisted-man" target="_blank" rel="noopener">Follow</a></div><div class="level is-mobile"><a class="level-item button is-transparent is-marginless" target="_blank" rel="noopener" title="Github" href="https://github.com/Enlisted-man"><i class="fab fa-github"></i></a><a class="level-item button is-transparent is-marginless" target="_blank" rel="noopener" title="RSS" href="/"><i class="fas fa-rss"></i></a></div></div></div><!--!--><div class="card widget"><div class="card-content"><div class="menu"><h3 class="menu-label">Links</h3><ul class="menu-list"><li><a class="level is-mobile is-mobile" href="https://www.csdn.net/" target="_blank" rel="noopener"><span class="level-left"><span class="level-item">csdn</span></span><span class="level-right"><span class="level-item tag">www.csdn.net</span></span></a></li></ul></div></div></div><div class="card widget"><div class="card-content"><div class="menu"><h3 class="menu-label">Categories</h3><ul class="menu-list"><li><a class="level is-mobile is-marginless" href="/categories/blog/"><span class="level-start"><span class="level-item">blog</span></span><span class="level-end"><span class="level-item tag">4</span></span></a></li><li><a class="level is-mobile is-marginless" href="/categories/paper/"><span class="level-start"><span class="level-item">paper</span></span><span class="level-end"><span class="level-item tag">16</span></span></a></li></ul></div></div></div><div class="card widget"><div class="card-content"><h3 class="menu-label">Recent</h3><article class="media"><div class="media-content size-small"><p><time dateTime="2022-11-23T11:11:54.000Z">2022-11-23</time></p><p class="title is-6"><a class="link-muted" href="/2022/11/23/%E5%BF%85%E9%A1%BB%E4%BA%86%E8%A7%A3%E7%9A%84JVM%E7%9F%A5%E8%AF%86/">Java基础之JVM</a></p><p class="is-uppercase"><a class="link-muted" href="/categories/blog/">blog</a></p></div></article><article class="media"><div class="media-content size-small"><p><time dateTime="2022-09-23T12:11:54.000Z">2022-09-23</time></p><p class="title is-6"><a class="link-muted" href="/2022/09/23/Spring%20Bean%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F/">Spring Bean生命周期</a></p><p class="is-uppercase"><a class="link-muted" href="/categories/blog/">blog</a></p></div></article><article class="media"><div class="media-content size-small"><p><time dateTime="2022-06-23T15:10:46.000Z">2022-06-23</time></p><p class="title is-6"><a class="link-muted" href="/2022/06/23/MYSQL%E5%8E%9F%E7%90%86%E6%B5%85%E8%AF%BB/">MySQL原理浅析</a></p><p class="is-uppercase"><a class="link-muted" href="/categories/blog/">blog</a></p></div></article><article class="media"><div class="media-content size-small"><p><time dateTime="2021-02-23T14:52:01.000Z">2021-02-23</time></p><p class="title is-6"><a class="link-muted" href="/2021/02/23/MySQL%E7%B4%A2%E5%BC%95%E5%BC%95%E5%87%BA%E7%9A%84%E6%A0%91%E7%BB%93%E6%9E%84/">常见的树结构</a></p><p class="is-uppercase"><a class="link-muted" href="/categories/blog/">blog</a></p></div></article><article class="media"><div class="media-content size-small"><p><time dateTime="2019-05-25T02:36:44.000Z">2019-05-25</time></p><p class="title is-6"><a class="link-muted" href="/2019/05/25/ATOM-CVPR2019-Tracking/">ATOM-CVPR2019-Tracking</a></p><p class="is-uppercase"><a class="link-muted" href="/categories/paper/">paper</a></p></div></article></div></div><div class="card widget"><div class="card-content"><div class="menu"><h3 class="menu-label">Archives</h3><ul class="menu-list"><li><a class="level is-mobile is-marginless" href="/archives/2022/11/"><span class="level-start"><span class="level-item">November 2022</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li><li><a class="level is-mobile is-marginless" href="/archives/2022/09/"><span class="level-start"><span class="level-item">September 2022</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li><li><a class="level is-mobile is-marginless" href="/archives/2022/06/"><span class="level-start"><span class="level-item">June 2022</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li><li><a class="level is-mobile is-marginless" href="/archives/2021/02/"><span class="level-start"><span class="level-item">February 2021</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li><li><a class="level is-mobile is-marginless" href="/archives/2019/05/"><span class="level-start"><span class="level-item">May 2019</span></span><span class="level-end"><span class="level-item tag">16</span></span></a></li></ul></div></div></div><div class="card widget"><div class="card-content"><div class="menu"><h3 class="menu-label">Tags</h3><div class="field is-grouped is-grouped-multiline"><div class="control"><a class="tags has-addons" href="/tags/DataStructure/"><span class="tag">DataStructure</span><span class="tag is-grey-lightest">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/Detection/"><span class="tag">Detection</span><span class="tag is-grey-lightest">8</span></a></div><div class="control"><a class="tags has-addons" href="/tags/JVM/"><span class="tag">JVM</span><span class="tag is-grey-lightest">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/MySQL/"><span class="tag">MySQL</span><span class="tag is-grey-lightest">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/Spring/"><span class="tag">Spring</span><span class="tag is-grey-lightest">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/Tracking/"><span class="tag">Tracking</span><span class="tag is-grey-lightest">6</span></a></div><div class="control"><a class="tags has-addons" href="/tags/Video-Detection/"><span class="tag">Video Detection</span><span class="tag is-grey-lightest">2</span></a></div></div></div></div></div><div class="card widget"><div class="card-content"><div class="menu"><h3 class="menu-label">Subscribe to Updates</h3><form action="https://feedburner.google.com/fb/a/mailverify" method="post" target="popupwindow" onsubmit="window.open(&#039;https://feedburner.google.com/fb/a/mailverify?uri=&#039;,&#039;popupwindow&#039;,&#039;scrollbars=yes,width=550,height=520&#039;);return true"><input type="hidden" value="" name="uri"><input type="hidden" name="loc" value="en_US"><div class="field has-addons"><div class="control has-icons-left is-expanded"><input class="input" name="email" type="email" placeholder="Email"><span class="icon is-small is-left"><i class="fas fa-envelope"></i></span></div><div class="control"><input class="button is-primary" type="submit" value="Subscribe"></div></div></form></div></div></div></div><!--!--></div></div></section><footer class="footer"><div class="container"><div class="level"><div class="level-start"><a class="footer-logo is-block mb-2" href="/"><img src="/img/person.png" alt="Enlisted-man" height="28"></a><p class="size-small"><span>&copy; 2023 Enlisted-man</span>  Powered by <a href="https://hexo.io/" target="_blank" rel="noopener">Hexo</a> &amp; <a href="https://github.com/ppoffice/hexo-theme-icarus" target="_blank" rel="noopener">Icarus</a><br><span id="busuanzi_container_site_uv">Visited by <span id="busuanzi_value_site_uv">0</span> users</span></p></div><div class="level-end"><div class="field has-addons"><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Creative Commons" href="https://creativecommons.org/"><i class="fab fa-creative-commons"></i></a></p><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Attribution 4.0 International" href="https://creativecommons.org/licenses/by/4.0/"><i class="fab fa-creative-commons-by"></i></a></p><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Download on GitHub" href="https://github.com/ppoffice/hexo-theme-icarus"><i class="fab fa-github"></i></a></p></div></div></div></div></footer><script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script><script src="https://cdn.jsdelivr.net/npm/moment@2.22.2/min/moment-with-locales.min.js"></script><script>moment.locale("en");</script><script>var IcarusThemeSettings = {
+            site: {
+                url: 'http://yoursite.com',
+                external_link: {"enable":true,"exclude":[]}
+            },
+            article: {
+                highlight: {
+                    clipboard: true,
+                    fold: 'unfolded'
+                }
+            }
+        };</script><script src="https://cdn.jsdelivr.net/npm/clipboard@2.0.4/dist/clipboard.min.js" defer></script><script src="/js/animation.js"></script><a id="back-to-top" title="Back to Top" href="javascript:;"><i class="fas fa-chevron-up"></i></a><script src="/js/back_to_top.js" defer></script><!--!--><!--!--><!--!--><script src="https://cdn.jsdelivr.net/npm/lightgallery@1.6.8/dist/js/lightgallery.min.js" defer></script><script src="https://cdn.jsdelivr.net/npm/justifiedGallery@3.7.0/dist/js/jquery.justifiedGallery.min.js" defer></script><script>window.addEventListener("load", () => {
+            if (typeof $.fn.lightGallery === 'function') {
+                $('.article').lightGallery({ selector: '.gallery-item' });
+            }
+            if (typeof $.fn.justifiedGallery === 'function') {
+                if ($('.justified-gallery > p > .gallery-item').length) {
+                    $('.justified-gallery > p > .gallery-item').unwrap();
+                }
+                $('.justified-gallery').justifiedGallery();
+            }
+        });</script><!--!--><!--!--><!--!--><script src="/js/main.js" defer></script><div class="searchbox"><div class="searchbox-container"><div class="searchbox-header"><div class="searchbox-input-container"><input class="searchbox-input" type="text" placeholder="Type something..."></div><a class="searchbox-close" href="javascript:;">×</a></div><div class="searchbox-body"></div></div></div><script src="/js/insight.js" defer></script><script>document.addEventListener('DOMContentLoaded', function () {
+            loadInsight({"contentUrl":"/content.json"}, {"hint":"Type something...","untitled":"(Untitled)","posts":"Posts","pages":"Pages","categories":"Categories","tags":"Tags"});
+        });</script></body></html>
